@@ -92,9 +92,12 @@ struct cli_options {
     bool fake_internet;
     bool list_if;
 
-    char *netif_ipaddr;
     char *netif;
-    char *netif_netmask;
+    char *netif_ipcidr; // split into 2 parts, netif_ipaddr & netif_netmask
+
+    char netif_ipaddr[16];   // derived from netif_ipcidr
+    char netif_netmask[16];  // derived from netif_ipcidr
+    char netif_netaddr[16];  // derived from netif_ipcidr
 
     char *relay_server_addr;
     char *relay_username;

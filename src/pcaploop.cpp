@@ -1,4 +1,5 @@
 #include "config.h"
+#include "lan-play.h"
 #include "pcaploop.h"
 #include "helper.h"
 #include <base/llog.h>
@@ -60,11 +61,11 @@ static void set_filter(pcap_t *dev, const uint8_t *mac)
     char filter[100];
     static struct bpf_program bpf;
 
-    uint32_t mask = READ_NET32(str2ip(SUBNET_MASK), 0);
+    uint32_t mask = READ_NET32(str2ip(options.netif_netmask), 0);
     int num;
     for (num = 0; mask != 0 && num < 32; num++) mask <<= 1;
 
-    snprintf(filter, sizeof(filter), "net %s/%d and not ether src %02x:%02x:%02x:%02x:%02x:%02x", SUBNET_NET, num,
+    snprintf(filter, sizeof(filter), "net %s/%d and not ether src %02x:%02x:%02x:%02x:%02x:%02x", options.netif_netaddr, num,
         mac[0],
         mac[1],
         mac[2],
