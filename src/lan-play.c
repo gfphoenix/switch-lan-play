@@ -78,9 +78,9 @@ int lan_play_init(struct lan_play *lan_play)
     ret = init_pcap(lan_play, options.netif);
     if (ret != 0) return ret;
 
-    CPY_IPV4(ip, str2ip(SERVER_IP));
-    CPY_IPV4(subnet_net, str2ip(SUBNET_NET));
-    CPY_IPV4(subnet_mask, str2ip(SUBNET_MASK));
+    CPY_IPV4(ip, str2ip(options.netif_ipaddr));
+    CPY_IPV4(subnet_net, str2ip(options.netif_netaddr));
+    CPY_IPV4(subnet_mask, str2ip(options.netif_netmask));
     LLOG(LLOG_DEBUG, "packet init buffer %p", SEND_BUFFER);
     ret = packet_init(
         &lan_play->packet_ctx,

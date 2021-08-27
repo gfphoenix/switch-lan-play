@@ -7,6 +7,7 @@ OPTIONS_DEF(socks5_server_addr);
 OPTIONS_DEF(relay_server_addr);
 uv_signal_t signal_int;
 
+#define DEFAULT_NETIF_IPCIDR  "10.5.0.1/16"
 int list_interfaces(pcap_if_t *alldevs)
 {
     int i = 0;
@@ -46,6 +47,67 @@ int list_interfaces(pcap_if_t *alldevs)
     return i;
 }
 
+static int parseIPCIDR(struct cli_options *options)
+{
+    char *ipcidr = options->netif_ipcidr;
+    char temp[64];
+    char *p;
+    char *endp;
+    int prelen;
+    size_t n;
+    uint32_t subnet;
+    uint32_t mask;
+    if (!ipcidr) {
+        fprintf(stderr, "netif_ipcidr is NULL\n");
+        return -1;
+    }
+    n = strlen(ipcidr);
+    if (n > 50) {
+        fprintf(stderr, "Invalid ipcidr = '%s'\n", ipcidr);
+        return -1;
+    }
+    memcpy(temp, ipcidr, n + 1);
+    p = strchr(temp, '/');
+    if (!p) {
+        fprintf(stderr, "Invalid ipcider = '%s', doesn't contain '/'\n", ipcidr);
+        return -1;
+    }
+    *p = '\0';
+    p++;
+    if (uv_inet_pton(AF_INET, temp, &subnet) != 0) {
+        fprintf(stderr, "Invalid IPv4 address = '%s'\n", temp);
+        return -1;
+    }
+    subnet = ntohl(subnet);
+    snprintf(options->netif_ipaddr, sizeof(options->netif_ipaddr), "%u.%u.%u.%u",
+             (uint8_t)(subnet >> 24), (uint8_t)(subnet >> 16),
+             (uint8_t)(subnet >> 8), (uint8_t)(subnet >> 0));
+
+    prelen = strtol(p, &endp, 10);
+    if (*endp != '\0') {
+        fprintf(stderr, "Invalid prefix = '%s', endptr='%s'\n", p, endp);
+        return -1;
+    }
+    if (prelen < 0 || prelen > 32) {
+        fprintf(stderr, "Invalid prefix len = %d\n", prelen);
+        return -1;
+    }
+    mask = prelen ? ~((1 << (32 - prelen)) - 1) : 0;
+
+    snprintf(options->netif_netmask, sizeof(options->netif_netmask), "%u.%u.%u.%u",
+             (uint8_t)(mask >> 24), (uint8_t)(mask >> 16),
+             (uint8_t)(mask >> 8), (uint8_t)(mask >> 0));
+
+    subnet = subnet & mask;
+    snprintf(options->netif_netaddr, sizeof(options->netif_netaddr), "%u.%u.%u.%u",
+             (uint8_t)(subnet >> 24), (uint8_t)(subnet >> 16),
+             (uint8_t)(subnet >> 8), (uint8_t)(subnet >> 0));
+    printf("ipcidr = '%s'\n", options->netif_ipcidr);
+    printf("ipaddr = '%s'\n", options->netif_ipaddr);
+    printf("netmask = '%s'\n", options->netif_netmask);
+    printf("subnet = '%s'\n", options->netif_netaddr);
+    return 0;
+}
 int parse_arguments(int argc, char **argv)
 {
     #define CHECK_PARAM() if (1 >= argc - i) { \
@@ -65,8 +127,10 @@ int parse_arguments(int argc, char **argv)
     options.list_if = false;
 
     options.netif = NULL;
-    options.netif_ipaddr = NULL;
-    options.netif_netmask = NULL;
+    options.netif_ipcidr = DEFAULT_NETIF_IPCIDR;
+    options.netif_ipaddr[0] = '\0';
+    options.netif_netmask[0] = '\0';
+    options.netif_netaddr[0] = '\0';
 
     options.relay_server_addr = NULL;
     options.relay_username = NULL;
@@ -93,10 +157,10 @@ int parse_arguments(int argc, char **argv)
             CHECK_PARAM();
             options.netif = strdup(argv[i + 1]);
             i++;
-        // } else if (!strcmp(arg, "--netif-netmask")) {
-        //     CHECK_PARAM();
-        //     options.netif_netmask = argv[i + 1];
-        //     i++;
+         } else if (!strcmp(arg, "--netif-ipcidr")) {
+             CHECK_PARAM();
+             options.netif_ipcidr = argv[i + 1];
+             i++;
         } else if (!strcmp(arg, "--relay-server-addr")) {
             CHECK_PARAM();
             options.relay_server_addr = argv[i + 1];
@@ -163,6 +227,9 @@ int parse_arguments(int argc, char **argv)
     if (options.help || options.version || options.list_if || options.rpc) {
         return 0;
     }
+    if (parseIPCIDR(&options) != 0)
+        return -1;
+
     if (!options.relay_server_addr) {
         if (options.socks5_server_addr) {
             options.relay_server_addr = "127.0.0.1:11451";
@@ -208,6 +275,7 @@ void print_help(const char *name)
         "        [--fake-internet]\n"
         "        [--netif <interface>] default: all\n"
         // "        [--netif-netmask <ipnetmask>] default: 255.255.0.0\n"
+        "        [--netif-ipcidr <IP/prefix> default: " DEFAULT_NETIF_IPCIDR "\n"
         "        [--relay-server-addr <addr>]\n"
         "        [--username <username>]\n"
         "        [--password <password>]\n"
