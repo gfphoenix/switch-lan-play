@@ -211,7 +211,7 @@ done:
     int result = ioctl(fd, SIOCGIFHWADDR, &buffer);
     if (result < 0)
     {
-        fprintf(stderr, "%s %d\n", strerror(errno), fd);
+        fprintf(stderr, "%m %d\n", fd);
         exit(1);
     }
     memcpy(mac_addr, buffer.ifr_hwaddr.sa_data, 6);
@@ -247,7 +247,7 @@ done:
 
 int parse_ip_port(const char *str, char *out_addr, size_t out_addr_len, uint16_t *out_port, uint8_t *is_ipv6)
 {
-    int len = strlen(str);
+    int len = (int)strlen(str);
     if (len < 1 || len > 1000) {
         return -1;
     }
@@ -307,7 +307,7 @@ int parse_ip_port(const char *str, char *out_addr, size_t out_addr_len, uint16_t
     if (conv_res < 0 || conv_res > UINT16_MAX) {
         return -1;
     }
-    *out_port = conv_res;
+    *out_port = (uint16_t)conv_res;
     return 0;
 }
 

@@ -11,8 +11,8 @@ int send_payloads(
     uint16_t total_len = 0;
 
     while (part) {
-        if (buf - (uint8_t *)self->buffer + part->len >= self->buffer_len) {
-            LLOG(LLOG_ERROR, "send_payloads too large wanted: %d buffer_len: %d", buf - (uint8_t *)self->buffer + part->len, self->buffer_len);
+        if ((buf - (uint8_t *)self->buffer) + part->len >= self->buffer_len) {
+            LLOG(LLOG_ERROR, "send_payloads too large wanted: %d buffer_len: %u", buf - (uint8_t *)self->buffer + part->len, self->buffer_len);
             LLOG(LLOG_DEBUG, "send_payloads buffer: %p", self->buffer);
             assert(0);
             return -1;
