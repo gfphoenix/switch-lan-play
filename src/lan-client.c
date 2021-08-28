@@ -356,7 +356,7 @@ void lan_client_process_auth_me(struct lan_play *lan_play, const uint8_t *packet
         if (auth_type == 0) {
             const uint8_t *challenge = packet + 1;
             uint16_t challenge_len = len - 1;
-            uint16_t username_len = strlen(lan_play->username);
+            uint16_t username_len = (uint16_t)strlen(lan_play->username);
             uint16_t response_len = 20 + username_len;
             uint8_t *response = malloc(response_len);
             SHA1_CTX hashctx;
@@ -384,7 +384,7 @@ void lan_client_on_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* buf, co
         return;
     }
     struct lan_play *lan_play = (struct lan_play *)handle->data;
-    uint16_t recv_len = nread;
+    uint16_t recv_len = (uint16_t)nread;
     uint8_t *buffer = (uint8_t *)buf->base;
     uint8_t type = buffer[0] & 0x7f;
     // bool is_encrypted = (buffer[0] & 0x80) != 0;

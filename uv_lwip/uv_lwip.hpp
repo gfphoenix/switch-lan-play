@@ -5,6 +5,7 @@
 #include <base/debug.h>
 #include <base/llog.h>
 #include <uvw.hpp>
+#include <limits.h>
 #include <set>
 
 namespace slp {
@@ -30,10 +31,11 @@ struct UvlWriteReq {
     std::unique_ptr<char[], Deleter> data;
     uv_buf_t buf;
     std::shared_ptr<IConnection> parent;
-    UvlWriteReq(std::unique_ptr<char[], Deleter> dt, unsigned int len, std::shared_ptr<IConnection> parent) :
+    UvlWriteReq(std::unique_ptr<char[], Deleter> dt, size_t len, std::shared_ptr<IConnection> parent) :
         data{std::move(dt)},
-        buf{uv_buf_init(data.get(), len)},
+        buf{uv_buf_init(data.get(), (unsigned)len)},
         parent(parent) {
+        assert(len <= UINT_MAX);
         this->req.data = this;
     }
 };
@@ -87,14 +89,14 @@ class IConnection : public Leakable<IConnection> {
             }
             return ret;
         }
-        bool write(std::unique_ptr<char[]> data, unsigned int len) {
+        bool write(std::unique_ptr<char[]> data, size_t len) {
             auto buf = std::unique_ptr<char[], UvlWriteReq::Deleter>{
                 data.release(), [](char *ptr) { delete[] ptr; }
             };
             auto req = new UvlWriteReq(std::move(buf), len, shared_from_this());
             return uvl_write(&req->req, &this->client, &req->buf, 1, IConnection::writeCallback) == 0;
         }
-        bool write(const char *data, unsigned int len) {
+        bool write(const char *data, size_t len) {
             auto buf = std::unique_ptr<char[], UvlWriteReq::Deleter>{
                 (char *)data, [](char *) {}
             };
@@ -205,7 +207,7 @@ class UvLwipBase : public Leakable<UvLwipBase> {
         }
         void release() {
             closing = true;
-            closingCount = connSet.size();
+            closingCount = (int)connSet.size();
             uvl_close(&this->uvl, (uvl_close_cb) [](uvl_t *handle) {
                 UvLwipBase *self = (UvLwipBase *)handle->data;
                 self->onSelfClose();

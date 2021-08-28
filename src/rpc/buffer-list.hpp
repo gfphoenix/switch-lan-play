@@ -6,12 +6,12 @@
 class BufferList {
     protected:
         std::vector<std::unique_ptr<char[]>> list;
-        std::vector<unsigned int> sizeList;
-        unsigned int totalSize;
-        unsigned int offset;
-        char get(const unsigned int &k) {
-            unsigned int left = 0;
-            for (unsigned i = 0; i < sizeList.size(); i++) {
+        std::vector<size_t> sizeList;
+        size_t totalSize;
+        size_t offset;
+        char get(const size_t &k) {
+            size_t left = 0;
+            for (size_t i = 0; i < sizeList.size(); i++) {
                 auto len = sizeList[i];
                 auto actId = k + offset;
                 if (left + len >= actId) {
@@ -25,7 +25,7 @@ class BufferList {
     public:
         BufferList (): totalSize(0), offset(0) {}
         ~BufferList () {}
-        unsigned int size() {
+        size_t size() {
             return totalSize - offset;
         }
         void clear() {
@@ -34,12 +34,12 @@ class BufferList {
             totalSize = 0;
             offset = 0;
         }
-        void add(std::unique_ptr<char[]> buf, unsigned int size) {
+        void add(std::unique_ptr<char[]> buf, size_t size) {
             list.push_back(std::move(buf));
             sizeList.push_back(size);
             totalSize += size;
         }
-        void advance(unsigned int n) {
+        void advance(size_t n) {
             offset += n;
             while (offset >= sizeList[0]) {
                 auto len = sizeList[0];
@@ -51,12 +51,12 @@ class BufferList {
                 offset -= len;
             }
         }
-        void copyTo(unsigned int begin, char* dst, unsigned int n) {
-            for (unsigned int i = 0; i < n; i++) {
+        void copyTo(size_t begin, char* dst, size_t n) {
+            for (size_t i = 0; i < n; i++) {
                 dst[i] = get(begin + i);
             }
         }
-        char operator [](const unsigned int &k) {
+        char operator [](const size_t &k) {
             return get(k);
         }
 };

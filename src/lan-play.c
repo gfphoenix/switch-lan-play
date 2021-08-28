@@ -71,7 +71,7 @@ int lan_play_init(struct lan_play *lan_play)
     if (options.relay_password) {
         SHA1_CTX hashctx;
         SHA1Init(&hashctx);
-        SHA1Update(&hashctx, (const unsigned char *)options.relay_password, strlen(options.relay_password));
+        SHA1Update(&hashctx, (const unsigned char *)options.relay_password, (uint32_t)strlen(options.relay_password));
         SHA1Final(lan_play->key, &hashctx);
     }
 
