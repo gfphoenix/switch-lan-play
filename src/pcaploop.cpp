@@ -190,7 +190,7 @@ int uv_pcap_open_live(
     set_filter(dev, mac);
 
     if (set_immediate_mode(dev) == -1) {
-        LLOG(LLOG_DEBUG, "open %s fail: set_immediate_mode %s", d->name, strerror(errno));
+        LLOG(LLOG_DEBUG, "open %s fail: set_immediate_mode %m", d->name);
         goto fail;
     }
 

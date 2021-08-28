@@ -231,7 +231,7 @@ void WSConnection::onFrame() {
 }
 
 void WSConnection::sendText(std::shared_ptr<uvw::TCPHandle> &client, std::string &str) {
-    char header[14];
+    uint8_t header[14];
     int headerSize = 0;
     auto length = str.length();
 
@@ -239,12 +239,12 @@ void WSConnection::sendText(std::shared_ptr<uvw::TCPHandle> &client, std::string
     header[0] = 0x81;
     // mask=0
     if (length < 126) {
-        header[1] = length & 0x7f;
+        header[1] = (uint8_t)(length & 0x7f);
         headerSize = 2;
     } else if (length < 65536) {
-        header[1] = 126 & 0x7f;
-        header[2] = length >> 8;
-        header[3] = length;
+        header[1] = (uint8_t)(126 & 0x7f);
+        header[2] = (uint8_t)(length >> 8);
+        header[3] = (uint8_t)length;
         headerSize = 4;
     } else {
         LLOG(LLOG_ERROR, "sendText too large %d", length);
@@ -252,7 +252,7 @@ void WSConnection::sendText(std::shared_ptr<uvw::TCPHandle> &client, std::string
         headerSize = 10;
     }
 
-    client->write(header, headerSize);
+    client->write((char*)&header[0], headerSize);
 
     auto data = new char[length];
     memcpy(data, str.c_str(), length);
@@ -300,7 +300,7 @@ WSConnection::WSConnection(
                     SHA1_CTX hashctx;
                     unsigned char digest[20];
                     SHA1Init(&hashctx);
-                    SHA1Update(&hashctx, (const unsigned char *)key.c_str(), key.length());
+                    SHA1Update(&hashctx, (const unsigned char *)key.c_str(), (uint32_t)key.length());
                     SHA1Final(digest, &hashctx);
                     auto accept = base64_encode(digest, sizeof(digest));
                     wsState = WSCState::WAIT_DECODE_HEADER;
