@@ -1,5 +1,5 @@
 # switch-lan-play
-[![Build status](https://github.com/spacemeowx2/switch-lan-play/workflows/Build/badge.svg)](https://github.com/spacemeowx2/switch-lan-play/actions?query=workflow%3ABuild)
+[![Build status](https://github.com/gfphoenix/switch-lan-play/workflows/Build/badge.svg)](https://github.com/gfphoenix/switch-lan-play/actions?query=workflow%3ABuild)
 [![Chat on discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/zEMCu5n)
 
 English | [中文](README_zh.md)
@@ -31,7 +31,7 @@ Your PC and Switch **must** be connected to the same router.
 
 2. Must check **Installed in WinPcap API-compatible mode.** in Npcap installation wizard.
 
-3. Download the latest `lan-play.exe` from [releases](https://github.com/spacemeowx2/switch-lan-play/releases)
+3. Download the latest `lan-play.exe` from [releases](https://github.com/gfphoenix/switch-lan-play/releases)
 
 4. Run `lan-play.exe`
 
@@ -146,12 +146,12 @@ make
 
 ## Docker
 
-`docker run -d -p 11451:11451/udp -p 11451:11451/tcp spacemeowx2/switch-lan-play`
+`docker run -d -p 11451:11451/udp -p 11451:11451/tcp gfphoenix/switch-lan-play`
 
 ## Node
 
 ```sh
-git clone https://github.com/spacemeowx2/switch-lan-play
+git clone https://github.com/gfphoenix/switch-lan-play
 cd switch-lan-play/server
 npm install
 npm run build # build ts to js. run it again when code changed.
