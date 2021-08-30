@@ -318,9 +318,9 @@ void lan_play_signal_cb(uv_signal_t *signal, int signum)
     uv_walk(lan_play->loop, walk_cb, lan_play);
 }
 
-void print_version()
+void print_version(const char *name)
 {
-    printf("switch-lan-play " LANPLAY_VERSION "\n");
+    printf("%s " LANPLAY_VERSION "\n", name);
 }
 
 void list_netif()
@@ -345,11 +345,6 @@ int old_main()
     int ret;
 
     lan_play->loop = uv_default_loop();
-
-    if (options.version) {
-        print_version();
-        return 0;
-    }
 
     if (options.list_if) {
         list_netif();
@@ -395,8 +390,12 @@ int main(int argc, char **argv)
         print_help(argv[0]);
         return 1;
     }
+    if (options.version) {
+        print_version(argv[0]);
+        return 0;
+    }
     if (options.help) {
-        print_version();
+        print_version(argv[0]);
         print_help(argv[0]);
         return 0;
     }
