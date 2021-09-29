@@ -47,7 +47,25 @@ jobs:
       with:
         name: lan-play-windows
         path: build/src/Release/lan-play.exe
-  build-macos:
+  build-macos-amd64:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: make
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH="APPLE" -DCMAKE_OSX_ARCHITECTURES="x86_64" ..
+        make
+    - name: upload built files
+      uses: actions/upload-artifact@v1
+      with:
+        name: lan-play-macos-amd64
+        path: build/src/lan-play
+
+  build-macos-arm64:
     runs-on: macos-latest
 
     steps:
@@ -58,13 +76,12 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_ARCH="APPLE" -DCMAKE_OSX_ARCHITECTURES="arm64" ..
         make
-
     - name: upload built files
       uses: actions/upload-artifact@v1
       with:
-        name: lan-play-macos
+        name: lan-play-macos-arm64
         path: build/src/lan-play
   release:
     runs-on: ubuntu-latest
@@ -84,14 +101,19 @@ jobs:
         path: lan-play-windows
     - uses: actions/download-artifact@v1
       with:
-        name: lan-play-macos
-        path: lan-play-macos
+        name: lan-play-macos-amd64
+        path: lan-play-macos-amd64
+    - uses: actions/download-artifact@v1
+      with:
+        name: lan-play-macos-arm64
+        path: lan-play-macos-arm64
 ################################################################################
     - name: rename
       run: |
         mv ./lan-play-windows/lan-play.exe ./lan-play-windows/lan-play-win64.exe
         mv ./lan-play-linux/lan-play ./lan-play-linux/lan-play-linux
-        mv ./lan-play-macos/lan-play ./lan-play-macos/lan-play-macos
+        mv ./lan-play-macos-amd64/lan-play ./lan-play-macos-amd64/lan-play-macos-amd64
+        mv ./lan-play-macos-arm64/lan-play ./lan-play-macos-arm64/lan-play-macos-arm64
     - name: Release
       uses: softprops/action-gh-release@v1
       with:

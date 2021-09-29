@@ -44,7 +44,7 @@ jobs:
       with:
         name: lan-play-windows
         path: build/src/Debug/lan-play.exe
-  build-macos:
+  build-macos-amd64:
     runs-on: macos-latest
 
     steps:
@@ -55,11 +55,30 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake ..
+        cmake -DTARGET_ARCH="APPLE" -DCMAKE_OSX_ARCHITECTURES="x86_64" ..
         make
 
     - name: upload built files
       uses: actions/upload-artifact@v1
       with:
-        name: lan-play-macos
+        name: lan-play-macos-amd64
+        path: build/src/lan-play
+  build-macos-arm64:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: make
+      run: |
+        mkdir build
+        cd build
+        cmake -DTARGET_ARCH="APPLE" -DCMAKE_OSX_ARCHITECTURES="arm64" ..
+        make
+
+    - name: upload built files
+      uses: actions/upload-artifact@v1
+      with:
+        name: lan-play-macos-arm64
         path: build/src/lan-play
